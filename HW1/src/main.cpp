@@ -1,65 +1,102 @@
 #include<iostream>
+#include<vector>
+#include<string>
 
-bool isValidBoat( int rbankbrewers, int rbankdrinkers, int lbankbrewers, int lbankdrinkers, int numInBoat, int boatsize, int totalbrewers, int totaldrinkers )
-{
-    return ( rbankbrewers >= rbankdrinkers || rbankbrewers == 0 || rbankdrinkers == 0 ) 
-        && ( lbankbrewers >= lbankdrinkers || lbankbrewers == 0 || lbankdrinkers == 0 ) 
-        && numInBoat <= boatsize && numInBoat >= 1 
-        && rbankbrewers >= 0 && lbankbrewers >= 0 && rbankdrinkers >= 0 && lbankdrinkers >= 0
-        && rbankbrewers <= totalbrewers && lbankbrewers <= totalbrewers 
-        && rbankdrinkers <= totaldrinkers && lbankdrinkers <= totaldrinkers;
-}
+struct boatstate {
+    int brewers;
+    int drinkers;
+    bool onLeft{true};
 
-bool isEndState(int rb, int sb, int rd, int sd)
-{
-    return rb == sb && rd == sd;
-}
-
-std::pair< int, int > generateBoat( int rbankbrewers, int rbankdrinkers, int lbankbrewers, int lbankdrinkers, int boatsize, bool ltoR, int totalbrewers, int totaldrinkers )
-{
-    //int boatBrewers{0};
-    //int boatDrinkers{ 0 };
-    if( ltoR )
+    boatstate(int brewers_, int drinker_, bool onleft_):brewers(brewers_), drinkers(drinker_), onLeft(onleft_)
+    {}
+    
+    bool isEndState() const
     {
-        for( int i = boatsize; i >= 0; --i )
-        {
-            for( int boatDrinkers = boatsize; boatDrinkers >= 0; --boatDrinkers )
+        return brewers == 0 && drinkers == 0 && !onLeft;
+    }
+
+    bool isGoodState(boatstate currentBoat, int boatsize, int totalbrewers, int totaldrinkers) const
+    {
+        if (drinkers > brewers)
+            return false;
+        if (drinkers < 0)
+            return false;
+        if (brewers < 0)
+            return false;
+        if (drinkers > totaldrinkers)
+            return false;
+        if (brewers > totalbrewers)
+            return false;
+        //if((totalbrewers - brewers) + (totaldrinkers - drinkers) > boatsize)
+        //    return false;
+        if (onLeft) {
+            if ((currentBoat.brewers - brewers) + (currentBoat.drinkers - drinkers) > boatsize)
             {
-                for( int boatBrewers = 0; boatBrewers <= boatsize - boatDrinkers; ++boatBrewers )
-                {
-                    if( isValidBoat( rbankbrewers + boatBrewers, rbankdrinkers + boatDrinkers,
-                                     lbankbrewers - boatBrewers, lbankdrinkers - boatDrinkers, boatDrinkers + boatBrewers, boatsize, totalbrewers, totaldrinkers ) )
-                    {
-                        return { boatDrinkers, boatBrewers };
-                    }
-                }
+                return false;
+            }
+        }
+        else
+        {
+            if (((totalbrewers - currentBoat.brewers) - brewers) + ((totaldrinkers - currentBoat.drinkers) - drinkers) > boatsize)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    std::string toString() const 
+    {
+        return "B=" + std::to_string( brewers) + ",D=" + std::to_string(drinkers) + "," + std::string(onLeft ? "left" : "right") + "\n";
+    }
+
+    bool operator==(const boatstate& c1) {
+        return brewers == c1.brewers && drinkers == c1.drinkers && onLeft == c1.onLeft;
+    }
+};
+
+std::vector<boatstate> generateValidMoves(boatstate currentBoat, int boatsize, int totalbrewers, int totaldrinkers, bool onleft, std::vector<boatstate> oldMoves)
+{
+    std::vector <boatstate> validStates;
+    for (int brewers = 0; brewers <= totalbrewers; ++brewers)
+    {
+        for (int drinkers = 0; drinkers <= totaldrinkers; ++drinkers)
+        {
+            boatstate newboat(brewers, drinkers, onleft);
+            if (newboat.isGoodState(currentBoat, boatsize, totalbrewers, totaldrinkers) && std::find(oldMoves.begin(), oldMoves.end(), newboat) == oldMoves.end())
+            {
+                validStates.push_back(newboat);
+                //std::cout << boat.toString();
             }
         }
     }
-    else
-    {
-        for( int i = 1; i <= boatsize; ++i )
-        {
-            for( int boatDrinkers = i; boatDrinkers <= boatsize; ++boatDrinkers )
-            {
-                for( int boatBrewers = 0; boatBrewers <= boatsize - boatDrinkers; ++boatBrewers )
-                {
-                    if( isValidBoat( rbankbrewers - boatBrewers, rbankdrinkers - boatDrinkers,
-                                     lbankbrewers + boatBrewers, lbankdrinkers + boatDrinkers, boatDrinkers + boatBrewers, boatsize, totalbrewers, totaldrinkers ) )
-                    {
-                        return { boatDrinkers, boatBrewers };
-                    }
-                }
-            }
-        }
-    }
-
-    return {-1,-1};
+    return validStates;
 }
 
-void printBoat( int drinkers, int brewers )
+bool solveBoat(boatstate curBoat, int boatsize, int totalbrewers, int totaldrinkers,bool onLeft, std::vector<boatstate> oldMoves)
 {
-    std::cout << "B=" << brewers << ",D=" << drinkers << "\n";
+    auto states = generateValidMoves(curBoat, boatsize, totalbrewers, totaldrinkers, onLeft, oldMoves);
+    if (states.empty()) { return false; }
+
+    for (auto const& state : states)
+    {
+        oldMoves.push_back(state);
+        if(state.isEndState())
+        {
+            for (auto const& old : oldMoves)
+            {
+                std::cout << old.toString();
+            }
+            return true;
+        }
+        
+        if (solveBoat(state, boatsize, totalbrewers, totaldrinkers, !onLeft, oldMoves))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int main()
@@ -74,44 +111,14 @@ int main()
     //std::cout << "Boat Capacity :\n ";
     //std::cin >> capacity;
 
-    int left_brewers{ brewers };
-    int left_drinkers{ drinkers };
-    int right_brewers{0};
-    int right_drinkers{0};
-    bool ltoR{ true };
+    std::vector<boatstate> prevousMoves;
 
-    while(true)
+    boatstate startBoat(3, 3, true);
+    prevousMoves.push_back(startBoat);
+
+    if (solveBoat(startBoat, capacity, brewers, drinkers, true, prevousMoves))
     {
-        std::cout << "Left Bank\n";
-        printBoat( left_drinkers, left_brewers );
-        std::cout << "Right Bank\n";
-        printBoat( right_drinkers, right_brewers );
-
-        if( isEndState( right_brewers, brewers, right_drinkers, drinkers ) )
-        {
-            std::cout << "worked\n";
-            break;
-        }
-
-        auto boat = generateBoat( right_brewers, right_drinkers, left_brewers, left_drinkers, capacity, ltoR, brewers, drinkers );
-        std::cout << "Boat\n";
-        printBoat( boat.first, boat.second );
-        std::cout << "\n";
-        if( ltoR )
-        {
-            left_brewers -= boat.second;
-            right_brewers += boat.second;
-            left_drinkers -= boat.first;
-            right_drinkers += boat.first;
-        }
-        else
-        {
-            left_brewers += boat.second;
-            right_brewers -= boat.second;
-            left_drinkers += boat.first;
-            right_drinkers -= boat.first;
-        }
-        ltoR = !ltoR;
+        std::cout << "Worked\n";
     }
 
     getchar();
