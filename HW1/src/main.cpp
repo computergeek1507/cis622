@@ -17,8 +17,6 @@ struct boatstate {
 
     bool isGoodState(boatstate currentBoat, int boatsize, int totalbrewers, int totaldrinkers) const
     {
-        if (drinkers > brewers)
-            return false;
         if (drinkers < 0)
             return false;
         if (brewers < 0)
@@ -28,33 +26,37 @@ struct boatstate {
         if (brewers > totalbrewers)
             return false;
 
+        //curent brewers/drinkers to next brewers/drinkers must be within boat size
+        if (abs(currentBoat.brewers - brewers) + abs(currentBoat.drinkers - drinkers) > boatsize)
+        {
+            return false;
+        }
+        if (abs(currentBoat.brewers - brewers) + abs(currentBoat.drinkers - drinkers) <= 0)
+        {
+            return false;
+        }
+
         if (!onLeft) {
-            if ((currentBoat.brewers - brewers) + (currentBoat.drinkers - drinkers) > boatsize)
-            {
-                return false;
-            }
-            if ((currentBoat.brewers - brewers) + (currentBoat.drinkers - drinkers) <= 0)
+            if (currentBoat.brewers < brewers || currentBoat.drinkers < drinkers)
             {
                 return false;
             }
         }
         else
         {
-            //2,2
-            int rightbrewers = totalbrewers - currentBoat.brewers;
-            int rightdrinkers = totaldrinkers - currentBoat.brewers;
-
-            if (rightbrewers + brewers > totalbrewers) {
-                return false;
-            }
-            if (rightdrinkers + drinkers > totaldrinkers) {
-                return false;
-            }
-            if ((totalbrewers - brewers) + (totaldrinkers - drinkers) > boatsize)
+            if (currentBoat.brewers > brewers || currentBoat.drinkers > drinkers)
             {
                 return false;
             }
         }
+
+        //leftside ratio
+        if (drinkers > brewers && drinkers != 0 && brewers != 0)
+            return false;
+
+        //rightside ratio
+        if ((totaldrinkers - drinkers) > (totalbrewers - brewers) && (totaldrinkers - drinkers) != 0 && (totalbrewers - brewers) != 0 )
+            return false;
 
         return true;
     }
@@ -80,13 +82,13 @@ std::vector<boatstate> generateValidMoves(boatstate currentBoat, int boatsize, i
             if (newboat.isGoodState(currentBoat, boatsize, totalbrewers, totaldrinkers) && std::find(oldMoves.begin(), oldMoves.end(), newboat) == oldMoves.end())
             {
                 validStates.push_back(newboat);
-                //std::cout << boat.toString();
             }
         }
     }
     return validStates;
 }
 
+//pass oldMoves by copy for recursion
 bool solveBoat(boatstate curBoat, int boatsize, int totalbrewers, int totaldrinkers, std::vector<boatstate> oldMoves)
 {
     auto states = generateValidMoves(curBoat, boatsize, totalbrewers, totaldrinkers, oldMoves);
