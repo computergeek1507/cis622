@@ -66,6 +66,11 @@ struct boatstate {
         return "B=" + std::to_string( brewers) + ",D=" + std::to_string(drinkers) + "," + std::string(onLeft ? "left" : "right") + "\n";
     }
 
+    std::string printMove(boatstate const& prevous) const
+    {
+        return "B=" + std::to_string(abs(prevous.brewers - brewers)) + ",D=" + std::to_string(abs(prevous.drinkers - drinkers)) + "\n";
+    }
+
     bool operator==(const boatstate& c1) {
         return brewers == c1.brewers && drinkers == c1.drinkers && onLeft == c1.onLeft;
     }
@@ -99,10 +104,14 @@ bool solveBoat(boatstate curBoat, int boatsize, int totalbrewers, int totaldrink
         oldMoves.push_back(state);
         if(state.isEndState())
         {
-            for (auto const& old : oldMoves)
+            for (int i =1; i<oldMoves.size();++i)
             {
-                std::cout << old.toString();
+                 std::cout << oldMoves[i].printMove(oldMoves[i - 1]);
             }
+            //for (auto const& old : oldMoves)
+           // {
+           //     std::cout << old.toString();
+           // }
             return true;
         }
         
@@ -119,12 +128,12 @@ int main()
     int brewers{ 3 };
     int drinkers{ 3 };
     int capacity{ 2 };
-    //std::cout << "Number of Brewers :\n ";
-    //std::cin >> brewers;
-    //std::cout << "Number of Beer Drinkers :\n ";
-    //std::cin >> drinkers;
-    //std::cout << "Boat Capacity :\n ";
-    //std::cin >> capacity;
+    std::cout << "Number of Brewers :\n ";
+    std::cin >> brewers;
+    std::cout << "Number of Beer Drinkers :\n ";
+    std::cin >> drinkers;
+    std::cout << "Boat Capacity :\n ";
+    std::cin >> capacity;
 
     std::vector<boatstate> prevousMoves;
 
@@ -136,5 +145,6 @@ int main()
         std::cout << "Worked\n";
     }
 
+    getchar();
     getchar();
 }
