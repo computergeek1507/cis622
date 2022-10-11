@@ -7,35 +7,35 @@
 
 struct SUVCarBuilder : CarBuilder
 {
-    std::unique_ptr <Car> car;
+	std::unique_ptr <Car> car;
 
-    SUVCarBuilder()
-    {
-        car = std::make_unique<Car>();
-    }
+	SUVCarBuilder()
+	{
+		car = std::make_unique<Car>();
+	}
 
-    void buildModel() override
-    {
-        car->Model = "SUV";
-    }
+	void buildModel() override
+	{
+		car->SetModel("SUV");
+	}
 
-    void buildEngine() override
-    {
-        car->Engine = "V8 4L";
-    }
+	void buildEngine() override
+	{
+		car->SetEngine("V8 4L");
+	}
 
-    void buildColor() override
-    {
-        car->Color = "Blue";
-    }
+	void buildColor() override
+	{
+		car->SetColor("Blue");
+	}
 
-    void buildAddon() override
-    {
-        car->Addon = "Winter Package";
-    }
+	void buildAddon() override
+	{
+		car->SetAddon("Winter Package");
+	}
 
-    std::unique_ptr<Car> getCar() override
-    {
-        return std::move(car);
-    }
+	std::unique_ptr<Car> getCar() override
+	{
+		return std::move(car);
+	}
 };
