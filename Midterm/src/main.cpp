@@ -13,6 +13,7 @@ int main()
     CarDirector director;
 
     auto suvBuilder = std::make_unique<SUVCarBuilder>();
+
     director.SetBuilder(suvBuilder.get());
     director.BuildCar();
     auto car = director.getCar();
@@ -20,6 +21,7 @@ int main()
     std::cout << "Car Built: " << car->AsString() << "\n";
 
     auto sportsBuilder = std::make_unique<SportsCarBuilder>();
+
     director.SetBuilder(sportsBuilder.get());
     director.BuildCar();
     auto car2 = director.getCar();

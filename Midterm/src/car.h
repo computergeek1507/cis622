@@ -3,10 +3,17 @@
 #include <string>
 #include <vector>
 
+#include "logger.h"
 
 struct Car
 {
     Car() = default;
+    //oop way
+    Car(std::string model, std::string color) 
+    {
+        SetModel(model);
+        SetColor(color);
+    }
 
     void SetModel(std::string model) 
     {
@@ -25,9 +32,18 @@ struct Car
         m_addon = addon; 
     }
 
+    std::string GetModel() const
+    {
+        return m_model;
+    }
+    std::string GetColor() const
+    {
+        return m_color;
+    }
+
     std::string AsString()
     {
-        return m_color + " " + m_model + " with " + m_engine + " and " + m_addon;
+        return GetColor() + " " + GetModel();
     }
 private:
     std::string m_model;

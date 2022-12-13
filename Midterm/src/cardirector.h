@@ -7,7 +7,7 @@
 
 struct CarDirector
 {
-    CarBuilder* carBuilder;
+    CarBuilder* carBuilder{nullptr};
 
     void SetBuilder(CarBuilder* carBuilder_)
     {
